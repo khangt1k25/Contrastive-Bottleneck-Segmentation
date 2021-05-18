@@ -1,0 +1,4 @@
+.vscode/*
+dumps/*
+data/*
+__pycache__/*
