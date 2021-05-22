@@ -10,7 +10,7 @@ from utils import *
 if __name__ == '__main__':
     criterion = SupConLoss(temperature=0.07, contrast_mode="all", base_temperature=0.07)
 
-    train_dataset = datasets.CIFAR10(root='./cifar10',
+    train_dataset = datasets.CIFAR10(root='./data/cifar10',
                                          transform=train_transform,
                                          download=False)
     train_loader = DataLoader(train_dataset, batch_size=10,  shuffle=True, num_workers=2)
@@ -23,5 +23,5 @@ if __name__ == '__main__':
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    trainer = Trainer(maskgenerator, encoder, optimizer, device)
-
+    trainer = Trainer(maskgenerator, encoder, optimizer, criterion, device)
+    trainer.train(train_loader, 0, 10)

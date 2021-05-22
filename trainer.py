@@ -1,4 +1,5 @@
 from torch._C import device
+from torch.functional import norm
 from models import SupConResNet
 import torch
 from torch.utils.data import DataLoader
@@ -30,7 +31,16 @@ class Trainer():
             'optimizer_state_dict': self.optimizer.state_dict()
         }, path)
         print("Saving successful")
-        
+    def load(self):
+        try:
+            path = './dumps/model.pt'
+            checkpoint = torch.load(path)
+            self.maskgenerator.load_state_dict(checkpoint['maskgenerator_state_dict'])
+            self.encoder.load_state_dict(checkpoint['encoder_state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            print("Load successful")
+        except:
+            print("Load fail")
     def train(self, trainloader, start_epoch, end_epoch):
         for epoch in range(start_epoch, end_epoch+1):
             epoch_loss = 0.
@@ -42,6 +52,9 @@ class Trainer():
                     images2 = images.clone().detach()
 
                 images = torch.cat([images1, images2], dim=0)
+
+
+
                 features = self.encoder(images)
                 f1, f2 = torch.split(features, [bsz, bsz], dim=0)
                 features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
@@ -50,15 +63,17 @@ class Trainer():
 
                 mask = mask.view(bsz, -1)
 
-                norm_mask_loss = torch.norm(mask, p=1)/(mask.shape[0]*mask.shape[1])
+                
+                norm_mask_loss = torch.mean(mask)
 
-                loss = contrastive_loss + 0.01*norm_mask_loss
-
+                loss = contrastive_loss + norm_mask_loss
+                
+                # print(contrastive_loss)
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item()
-
+                break
             print(f"\nepoch {epoch} with loss {epoch_loss/batch}\n") 
             if epoch % 5 == 0:
                 self.saving()

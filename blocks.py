@@ -1,5 +1,6 @@
-from torch import nn
-
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 class Conv2dBlock(nn.Module):
     def __init__(self, in_channel, out_channel, kernel_size=(3, 3), stride=1,
