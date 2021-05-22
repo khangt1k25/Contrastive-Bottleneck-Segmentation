@@ -44,14 +44,16 @@ class Trainer():
     def train(self, trainloader, start_epoch, end_epoch):
         for epoch in range(start_epoch, end_epoch+1):
             epoch_loss = 0.
-            for batch, (images, labels) in tqdm(enumerate(trainloader), leave=False):
+            for batch, ((images_base, images_da), labels) in tqdm(enumerate(trainloader), leave=False):
                 bsz = labels.shape[0]
-                mask = self.maskgenerator(images)
-                images1 = images*mask
-                with torch.no_grad():
-                    images2 = images.clone().detach()
+                images_base, images_da, labels = images_base.to(self.device),images_da.to(self.device),labels.to(self.device)
+                
+                mask = self.maskgenerator(images_base)
+                images_base = images_base*mask
+                # with torch.no_grad():
+                #     images2 = images.clone().detach()
 
-                images = torch.cat([images1, images2], dim=0)
+                images = torch.cat([images_base, images_da], dim=0)
 
 
 
@@ -73,7 +75,7 @@ class Trainer():
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item()
-                break
+
             print(f"\nepoch {epoch} with loss {epoch_loss/batch}\n") 
             if epoch % 5 == 0:
                 self.saving()

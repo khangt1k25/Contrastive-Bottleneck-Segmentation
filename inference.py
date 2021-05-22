@@ -15,7 +15,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 maskgenerator = MaskGenerator("cifar10", out_channels=1)
 
 try:
-    path = './dumps/model1.pt'
+    path = './dumps/model_25.pt'
     checkpoint = torch.load(path,map_location=device)
     maskgenerator.load_state_dict(checkpoint['maskgenerator_state_dict'])
     print("Load successful")
