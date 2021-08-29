@@ -2,3 +2,6 @@
 dumps/*
 data/*
 __pycache__/*
+PASCAL_VOC/*
+pics/*
+debug.py

@@ -7,7 +7,7 @@ import torch.optim as optim
 import torchvision.datasets as datasets
 from tqdm import tqdm
 from models import *
-from SupConLoss import *
+from losses import * 
 from utils import *
 
 
@@ -22,7 +22,7 @@ class Trainer():
         self.encoder = encoder.to(self.device)
         self.optimizer = optimizer
         self.criterion = criterion
-    
+
     def saving(self):
         path = './dumps/model.pt'
         torch.save({
@@ -31,6 +31,7 @@ class Trainer():
             'optimizer_state_dict': self.optimizer.state_dict()
         }, path)
         print("Saving successful")
+
     def load(self):
         try:
             path = './dumps/model.pt'
@@ -41,6 +42,7 @@ class Trainer():
             print("Load successful")
         except:
             print("Load fail")
+    
     def train(self, trainloader, start_epoch, end_epoch):
         for epoch in range(start_epoch, end_epoch+1):
             epoch_loss = 0.
@@ -49,7 +51,7 @@ class Trainer():
                 images_base, images_da, labels = images_base.to(self.device),images_da.to(self.device),labels.to(self.device)
                 
                 mask = self.maskgenerator(images_base)
-                images_base = images_base*mask
+                images_base = images_base * mask
                 # with torch.no_grad():
                 #     images2 = images.clone().detach()
 
@@ -70,7 +72,7 @@ class Trainer():
 
                 loss = contrastive_loss + norm_mask_loss
                 
-                # print(contrastive_loss)
+            
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
