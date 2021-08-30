@@ -1,21 +1,34 @@
 import os 
 import torch
-from torch.utils.data import Dataset 
+from torch.utils.data import Dataset
+from torchvision.transforms.functional import to_tensor 
 from utils import mkdir_if_missing, download_file_from_google_drive
 import tarfile
 from PIL import Image
 from utils import *
 from copy import deepcopy
+import numpy as np
 
 class VOC(Dataset):
     
     GOOGLE_DRIVE_ID = '1pxhY5vsLwXuz6UHZVUKhtb7EJdCg2kuH'
     FILE = 'PASCAL_VOC.tgz'
     DB_NAME = 'VOCSegmentation'
+    VOC_COLORMAP = [[0, 0, 0], [128, 0, 0], [0, 128, 0], [128, 128, 0],
+                    [0, 0, 128], [128, 0, 128], [0, 128, 128], [128, 128, 128],
+                    [64, 0, 0], [192, 0, 0], [64, 128, 0], [192, 128, 0],
+                    [64, 0, 128], [192, 0, 128], [64, 128, 128], [192, 128, 128],
+                    [0, 64, 0], [128, 64, 0], [0, 192, 0], [128, 192, 0],
+                    [0, 64, 128]]
+
+    VOC_CLASSES = [
+        'background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',
+        'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike',
+        'person', 'potted plant', 'sheep', 'sofa', 'train', 'tv/monitor']
+
     def __init__(self, root, split='train', res=224, transform=True, download=False):
         self.root  = root 
         self.split = split
-        
         self.transform = transform
         self.base_transform = get_base_transform()
         self.train_transform = get_train_transform()
@@ -61,7 +74,7 @@ class VOC(Dataset):
         
         imgid = self.imdb[index]
 
-        image, _ = self.load_data(imgid)
+        image, label = self.load_data(imgid)
 
         if self.transform:
             image_base = self.base_transform(image)
@@ -69,19 +82,36 @@ class VOC(Dataset):
 
         image_base = self.to_tensor_normalize_transform(image_base)
         image_da = self.to_tensor_normalize_transform(image_da)
-        # sal = self.to_tensor(sal)
+        
+        label = self.transform_label(label)
 
-        return {"base":image_base, "aug": image_da}
+
+        return {"base":image_base, "aug": image_da, "label": label}
 
     def load_data(self, image_id):
         image_path = os.path.join(self.root, self.DB_NAME, 'images', '{}.jpg'.format(str(image_id))) 
-        sal_path = os.path.join(self.root, self.DB_NAME, 'saliency_supervised_model', '{}.png'.format(str(image_id)))
         image = Image.open(image_path).convert('RGB')
-        #sal = Image.open(sal_path)
-        sal = torch.zeros(size=(1, ))
-        return image, sal
     
+        label_path = os.path.join(self.root, self.DB_NAME, 'SegmentationClassAug', '{}.png'.format(str(image_id))) 
+        label = Image.open(label_path)
+        
+        
+        return image, label
+    
+
+    
+    def transform_label(self, label):
+        label = np.array(label)
+        mask = (label!=0) & (label !=255)
+        label = label[mask]  # discard background
+
+        counts = np.bincount(label)
+        y = np.argmax(counts)
+        y = np.array([y])
+        return torch.from_numpy(y)
 
     def __len__(self):
         return len(self.imdb)
         
+
+    

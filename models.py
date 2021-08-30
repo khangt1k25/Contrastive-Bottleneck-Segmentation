@@ -69,7 +69,7 @@ model_dict = {
 
 class SupConResNet(nn.Module):
     """backbone + projection head"""
-    def __init__(self, name='resnet50', head='mlp', feat_dim=128):
+    def __init__(self, name='resnet18', head='mlp', feat_dim=128):
         super(SupConResNet, self).__init__()
         model_fun, dim_in = model_dict[name]
         self.encoder = model_fun()
@@ -102,11 +102,14 @@ class MaskGenerator(nn.Sequential):
             channel_init = 16
             steps = 2
 		# For CIFAR
-        else:
+        elif dataset == "cifar10":
             input_channel = 3
             channel_init = 32
             steps = 3
-
+        elif dataset == 'voc2012':
+            input_channel = 3
+            channel_init = 64
+            steps = 5
         # channel_current is 'in_channel'
         # channel_next is 'out_channel'
         channel_current = input_channel

@@ -5,3 +5,6 @@ __pycache__/*
 PASCAL_VOC/*
 pics/*
 debug.py
+
+*.tar
+VOCtrainval_11-May-2012/*
