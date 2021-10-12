@@ -52,7 +52,7 @@ def get_train_transform():
 def get_tensor_and_normalize_transform():
     return transforms.Compose([
         transforms.ToTensor(),
-        # transforms.Normalize(mean=(0.4914, 0.4822, 0.4465), std = (0.2023, 0.1994, 0.2010))
+        transforms.Normalize(mean=(0.4914, 0.4822, 0.4465), std = (0.2023, 0.1994, 0.2010))
     ])
 
 def get_tensor_transform():

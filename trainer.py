@@ -13,8 +13,6 @@ from utils import *
 
 
 
-
-
 class Trainer():
     def __init__(self, maskgenerator, encoder, optimizer, criterion, device):
         self.device = device
@@ -35,7 +33,7 @@ class Trainer():
     def load(self):
         try:
             path = './dumps/model.pt'
-            checkpoint = torch.load(path)
+            checkpoint = torch.load(path, map_location=self.device)
             self.maskgenerator.load_state_dict(checkpoint['maskgenerator_state_dict'])
             self.encoder.load_state_dict(checkpoint['encoder_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -46,12 +44,18 @@ class Trainer():
     def train(self, trainloader, start_epoch, end_epoch):
         for epoch in range(start_epoch, end_epoch+1):
             epoch_loss = 0.
-            for batch, ((images_base, images_da), labels) in tqdm(enumerate(trainloader), leave=False):
+            step = 0
+            for i, batch in tqdm(enumerate(trainloader), leave=False):
+                images_base = batch['base']
+                images_da = batch['aug']
+                labels = batch['label']
+
                 bsz = labels.shape[0]
                 images_base, images_da, labels = images_base.to(self.device),images_da.to(self.device),labels.to(self.device)
                 
                 mask = self.maskgenerator(images_base)
                 images_base = images_base * mask
+               
                 # with torch.no_grad():
                 #     images2 = images.clone().detach()
 
@@ -77,8 +81,8 @@ class Trainer():
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item()
-
-            print(f"\nepoch {epoch} with loss {epoch_loss/batch}\n") 
+                step += 1
+            print(f"\nepoch {epoch} with loss {epoch_loss/step}\n") 
             if epoch % 5 == 0:
                 self.saving()
 

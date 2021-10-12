@@ -86,7 +86,7 @@ class VOC(Dataset):
         label = self.transform_label(label)
 
 
-        return {"base":image_base, "aug": image_da, "label": label}
+        return {"base": image_base, "aug": image_da, "label": label}
 
     def load_data(self, image_id):
         image_path = os.path.join(self.root, self.DB_NAME, 'images', '{}.jpg'.format(str(image_id))) 

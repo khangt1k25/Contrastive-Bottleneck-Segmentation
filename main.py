@@ -13,7 +13,7 @@ toPIL = torchvision.transforms.ToPILImage()
 if __name__ == '__main__':
     criterion = SupConLoss(temperature=0.07, contrast_mode="all", base_temperature=0.07)
 
-    train_dataset = VOC(root='./PASCAL_VOC', split='trainaug', res=224, transform=True)
+    train_dataset = VOC(root='./PASCAL_VOC', split='trainaug', res=224, transform=True, download=True)
     train_loader = DataLoader(train_dataset, batch_size=64,  shuffle=True, num_workers=2, collate_fn=collate_custom)
 
 
@@ -26,4 +26,5 @@ if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     trainer = Trainer(maskgenerator, encoder, optimizer, criterion, device)
-    trainer.train(train_loader, 0, 10)
+    # trainer.load()
+    # trainer.train(train_loader, 0, 10)

@@ -109,7 +109,7 @@ class MaskGenerator(nn.Sequential):
         elif dataset == 'voc2012':
             input_channel = 3
             channel_init = 64
-            steps = 5
+            steps = 3
         # channel_current is 'in_channel'
         # channel_next is 'out_channel'
         channel_current = input_channel
